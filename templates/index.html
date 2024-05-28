@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        table {
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        input[type="number"] {
+            width: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="form-container">
+        <h2>Enter a 5x14 Matrix</h2>
+        <form id="matrix-form">
+            <table>
+                <tbody>
+                    <!-- Generate 5 rows with 14 columns of input fields -->
+                    {% for i in range(5) %}
+                    <tr>
+                        {% for j in range(14) %}
+                        <td><input type="number" step="any" name="cell-{{ i }}-{{ j }}" required></td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit">Predict</button>
+        </form>
+        <div id="output"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#matrix-form').on('submit', function(event) {
+                event.preventDefault();
+                var matrix = [];
+                for (var i = 0; i < 5; i++) {
+                    var row = [];
+                    for (var j = 0; j < 14; j++) {
+                        var value = $('input[name="cell-' + i + '-' + j + '"]').val();
+                        row.push(parseFloat(value));
+                    }
+                    matrix.push(row);
+                }
+
+                $.ajax({
+                    url: '/predict',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(matrix),
+                    success: function(response) {
+                        $('#output').html('<h3>Prediction:</h3><p>' + response.join(', ') + '</p>');
+                    },
+                    error: function(xhr, status, error) {
+                        $('#output').html('<h3>Error:</h3><p>' + error + '</p>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
